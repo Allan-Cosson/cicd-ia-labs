@@ -22,7 +22,6 @@ jobs:
         with: { python-version: "3.12" }
       - run: pip install -r requirements-dev.txt
       - run: pytest -m "unit or api"
-  
   unit:
     needs: lint
     runs-on: ubuntu-latest

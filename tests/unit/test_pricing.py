@@ -52,18 +52,6 @@ def test_coupon_discount(coupon,subtotal,expected):
 def test_coupon_inconnu():
     with pytest.raises(ValueError, match="Coupon inconnu"):
         coupon_discount(Decimal(50), "AZOIDJAZIODJA")
-
-''' Test Driven Developpement  '''
-"""
-def test_STUDENT15_exist():
-    coupon_discount(Decimal(50), "STUDENT15")
- 
-def test_STUDENT15_reduction_shipping():
-    assert coupon_discount(Decimal(5),"STUDENT15") == Decimal(5*0.15)
- 
-def test_STUDENT15_non_cumulable():
-    assert coupon_discount(Decimal(15),"STUDENT15") == Decimal("0")
- """
 #  - livraison offerte à partir de 50 € APRÈS remise
 @pytest.mark.parametrize("amount,coupon,empty,expected",[(Decimal(50),"WELCOME10",False,Decimal("0")),(Decimal(10),None,False,Decimal("4.90")),(Decimal(10),None,True,Decimal("0")),(Decimal(10),"FREESHIP",False,Decimal("0"))])
 def test_shipping_cost(amount,coupon,empty,expected):
