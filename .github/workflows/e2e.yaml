@@ -1,0 +1,45 @@
+name: E2E
+on:
+  push:
+    branches: [main, allan]
+  pull_request:
+  workflow_dispatch:          # lancement manuel depuis l'onglet Actions
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false        # voir le résultat des 2 navigateurs même si l'un échoue
+      matrix:
+        browser: [chromium, firefox]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - run: python -m playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Démarrer l'application en arrière-plan
+        run: nohup uvicorn minishop.api:app --port 8000 > app.log 2>&1 &
+
+      - name: Attendre que l'application réponde
+        run: timeout 30 bash -c 'until curl -sf localhost:8000/health; do sleep 1; done'
+
+      - name: Tests E2E
+        run: >
+          pytest -m e2e -n 2
+          --browser ${{ matrix.browser }}
+          --tracing retain-on-failure
+          --video retain-on-failure
+          --output test-results
+
+      - uses: actions/upload-artifact@v4
+        if: failure()          # traces + vidéos + logs serveur seulement si échec
+        with:
+          name: e2e-results-${{ matrix.browser }}
+          path: |
+            test-results/
+            app.log
